@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRAMA — Backoffice</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    try {
+      if (localStorage.getItem("trama-theme") === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+
+  <!-- Cobre a página até confirmarmos, junto ao Supabase, que quem está logado é gerente. -->
+  <div class="auth-guard" id="authGuard">Verificando permissão de acesso…</div>
+
+
+  <!-- ===== CABEÇALHO (igual ao das demais páginas) ===== -->
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <div class="header__left">
+        <a href="index.html#topo" class="logo">TRAMA</a>
+        <button class="icon-btn theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Alternar para modo claro">
+          <svg class="theme-toggle__icon theme-toggle__icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="4.5"/>
+            <path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8" stroke-linecap="round"/>
+          </svg>
+          <svg class="theme-toggle__icon theme-toggle__icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="nav" id="nav">
+        <a href="index.html#colecao">Coleção</a>
+
+        <div class="nav-dropdown">
+          <button class="nav-dropdown__trigger" aria-haspopup="true" aria-expanded="false">
+            Categorias
+            <svg class="nav-dropdown__chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-dropdown__menu">
+            <a href="categoria.html">Todas as peças</a>
+            <a href="categoria.html?cat=camisa">Camisas</a>
+            <a href="categoria.html?cat=casaco">Casacos e blazers</a>
+            <a href="categoria.html?cat=calca">Calças</a>
+            <a href="categoria.html?cat=vestido">Vestidos</a>
+          </div>
+        </div>
+
+        <a href="index.html#historia">História</a>
+        <a href="index.html#contato">Contato</a>
+      </nav>
+
+      <div class="header__actions">
+        <div class="header__account" id="headerAccount"></div>
+
+        <button class="icon-btn" id="cartToggle" aria-label="Abrir sacola" aria-expanded="false" aria-controls="cartDrawer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M6 8h12l-1 12H7L6 8Z" stroke-linejoin="round"/>
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" stroke-linecap="round"/>
+          </svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+
+        <button class="icon-btn menu-btn" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== BACKOFFICE ===== -->
+  <section class="backoffice">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Área restrita</p>
+        <h1>Gerenciar produtos</h1>
+      </div>
+
+      <!-- Formulário: serve tanto para adicionar um produto novo quanto para editar um existente -->
+      <form id="productForm" class="product-form">
+        <input type="hidden" id="productId">
+
+        <div class="product-form__grid">
+          <label for="fieldName">Nome do produto
+            <input type="text" id="fieldName" required>
+          </label>
+
+          <label for="fieldCategory">Categoria
+            <select id="fieldCategory">
+              <option value="camisa">Camisa</option>
+              <option value="calca">Calça</option>
+              <option value="casaco">Casaco / blazer</option>
+              <option value="vestido">Vestido</option>
+            </select>
+          </label>
+
+          <label for="fieldPrice">Preço (R$)
+            <input type="number" id="fieldPrice" min="0" step="0.01" required>
+          </label>
+
+          <label for="fieldTag">Etiqueta (opcional)
+            <input type="text" id="fieldTag" placeholder="Ex.: Novo, Best-seller">
+          </label>
+
+          <label class="product-form__image" for="fieldImage">
+            Imagem do produto
+            <input type="file" id="fieldImage" accept="image/*">
+            <span class="product-form__hint">Deixe em branco para manter o ícone padrão da categoria.</span>
+          </label>
+        </div>
+
+        <div class="product-form__preview" id="imagePreview"></div>
+
+        <div class="product-form__actions">
+          <button type="submit" class="btn btn--primary" id="submitLabel">Adicionar produto</button>
+          <button type="button" class="btn btn--ghost" id="cancelEdit" hidden>Cancelar edição</button>
+        </div>
+      </form>
+
+      <div id="adminTable"><!-- gerado via JS --></div>
+    </div>
+  </section>
+
+  <!-- ===== RODAPÉ (igual ao das demais páginas) ===== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div>
+        <p class="logo">TRAMA</p>
+        <p class="footer__note">Roupas feitas para durar mais que uma estação.</p>
+      </div>
+
+      <div class="footer__links">
+        <div>
+          <h3>Loja</h3>
+          <a href="index.html#colecao">Coleção</a>
+          <a href="index.html#historia">História</a>
+          <a href="index.html#contato">Contato</a>
+        </div>
+        <div>
+          <h3>Atendimento</h3>
+          <a href="mailto:ola@trama.com.br">ola@trama.com.br</a>
+          <a href="tel:+551140028922">(11) 4002-8922</a>
+        </div>
+        <div>
+          <h3>Redes</h3>
+          <a href="#" target="_blank" rel="noopener">Instagram</a>
+          <a href="#" target="_blank" rel="noopener">Pinterest</a>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="footer__copy">© <span id="year"></span> TRAMA. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- ===== SACOLA (igual à das demais páginas) ===== -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Sacola de compras">
+    <div class="cart-drawer__head">
+      <h2>Sua sacola</h2>
+      <button class="icon-btn" id="cartClose" aria-label="Fechar sacola">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="cart-drawer__items" id="cartItems">
+      <p class="cart-empty" id="cartEmpty">Sua sacola está vazia.</p>
+    </div>
+
+    <div class="cart-drawer__footer">
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cartTotal">R$ 0,00</span>
+      </div>
+      <button class="btn btn--primary btn--block" id="checkoutBtn">Finalizar compra</button>
+    </div>
+  </aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
