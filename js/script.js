@@ -652,7 +652,7 @@
         const filePath = `${Date.now()}-${sanitizeFileName(pendingFile.name)}`;
         const { error: uploadError } = await supabaseClient
           .storage.from("product-images")
-          .upload(filePath, pendingFile, { upsert: true });
+          .upload(filePath, pendingFile);
 
         if (uploadError) {
           alert("Erro ao enviar imagem: " + uploadError.message);
