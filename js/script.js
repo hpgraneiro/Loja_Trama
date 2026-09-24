@@ -13,6 +13,7 @@
    6c. Página de categoria (categoria.html)
    7. Formulário de newsletter
    8. Autenticação real (Supabase Auth)
+   8b. Mostrar/ocultar senha
    9. Página de login/cadastro (login.html)
    10. Backoffice (backoffice.html)
    11. Inicialização
@@ -103,6 +104,16 @@
 
   function productThumb(p) {
     return p.image ? `<img src="${p.image}" alt="${p.name}">` : (ICONS[p.category] || "");
+  }
+
+  // O Supabase Storage só aceita letras sem acento, números, ponto, hífen e
+  // underline no nome do arquivo. Nomes com "ç", "ã", espaços etc. (comuns em
+  // arquivos salvos no Windows) precisam ser "limpos" antes do envio.
+  function sanitizeFileName(name) {
+    return name
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos (ç, ã, é...)
+      .replace(/[^a-zA-Z0-9.\-_]/g, "-")                 // troca o resto por hífen
+      .toLowerCase();
   }
 
   const currency = (value) =>
@@ -424,6 +435,20 @@
     });
   }
 
+  /* ---------- 8b. Mostrar/ocultar senha ---------- */
+  function initPasswordToggles() {
+    document.querySelectorAll(".password-toggle").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const willShow = input.type === "password";
+        input.type = willShow ? "text" : "password";
+        btn.setAttribute("aria-pressed", String(willShow));
+        btn.setAttribute("aria-label", willShow ? "Ocultar senha" : "Mostrar senha");
+      });
+    });
+  }
+
   /* ---------- 9. Página de login/cadastro (login.html) ---------- */
   function initAuthPage() {
     const tabLogin = document.getElementById("tabLogin");
@@ -624,7 +649,7 @@
 
       // Se uma imagem nova foi escolhida, envia para o Storage antes de salvar o produto.
       if (pendingFile) {
-        const filePath = `${Date.now()}-${pendingFile.name}`;
+        const filePath = `${Date.now()}-${sanitizeFileName(pendingFile.name)}`;
         const { error: uploadError } = await supabaseClient
           .storage.from("product-images")
           .upload(filePath, pendingFile, { upsert: true });
@@ -724,6 +749,7 @@
     if (newsletterForm) newsletterForm.addEventListener("submit", handleNewsletter);
 
     initAuthPage();
+    initPasswordToggles();
     initBackoffice();
 
     const yearEl = document.getElementById("year");
